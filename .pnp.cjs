@@ -33,6 +33,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
+            ["solid-app-router", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.3.0"],\
             ["solid-js", "npm:1.3.8"],\
             ["typescript", "patch:typescript@npm%3A4.5.5#~builtin<compat/typescript>::version=4.5.5&hash=bda367"],\
             ["vite", "virtual:cd4b036d7d8fee7d67c357e076832b09a1aeafd3c11c803d2fc2f005391e69ba0dfa92344e044d60e89fdbeba52fb3969381ee1317e3ce9c31dcd854b1d125fd#npm:2.8.4"],\
@@ -713,6 +714,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["buy-the-dip-client", "workspace:."],\
+            ["solid-app-router", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.3.0"],\
             ["solid-js", "npm:1.3.8"],\
             ["typescript", "patch:typescript@npm%3A4.5.5#~builtin<compat/typescript>::version=4.5.5&hash=bda367"],\
             ["vite", "virtual:cd4b036d7d8fee7d67c357e076832b09a1aeafd3c11c803d2fc2f005391e69ba0dfa92344e044d60e89fdbeba52fb3969381ee1317e3ce9c31dcd854b1d125fd#npm:2.8.4"],\
@@ -1930,6 +1932,28 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["agent-base", "npm:6.0.2"],\
             ["debug", "virtual:c2bff3e67180802999655a22d390062982690e911b9d9225c258f3b25e7409f3867b2682c16232b77415f560a09d05a95042dc512a5b8c566c42bbbed88b0bbc#npm:4.3.3"],\
             ["socks", "npm:2.6.2"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["solid-app-router", [\
+        ["npm:0.3.0", {\
+          "packageLocation": "./.yarn/cache/solid-app-router-npm-0.3.0-eeee513de2-9bede76e56.zip/node_modules/solid-app-router/",\
+          "packageDependencies": [\
+            ["solid-app-router", "npm:0.3.0"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.3.0", {\
+          "packageLocation": "./.yarn/__virtual__/solid-app-router-virtual-3ab2fedbaf/0/cache/solid-app-router-npm-0.3.0-eeee513de2-9bede76e56.zip/node_modules/solid-app-router/",\
+          "packageDependencies": [\
+            ["solid-app-router", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.3.0"],\
+            ["@types/solid-js", null],\
+            ["solid-js", "npm:1.3.8"]\
+          ],\
+          "packagePeers": [\
+            "@types/solid-js",\
+            "solid-js"\
           ],\
           "linkType": "HARD"\
         }]\
