@@ -7,7 +7,6 @@ const Home: Component = () => {
         <>
             <Title>Title of page</Title>
             <Meta name="example" content="whatever" />
-            <Link rel="stylesheet" href="./style.css" />
             <HomeComponent />
         </>
     )

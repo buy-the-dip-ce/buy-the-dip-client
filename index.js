@@ -1,32 +1,40 @@
-'use strict';
+import express from "express"
+import path from "path"
 
-var web = require('solid-js/web');
-var express = require('express');
-var path = require('path');
+import { renderToString, generateHydrationScript } from "solid-js/web"
+import App from "./src/App"
+import { MetaProvider, renderTags } from "solid-meta"
 
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+const app = express()
+const port = 8080
 
-var express__default = /*#__PURE__*/_interopDefaultLegacy(express);
-var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
+app.use(express.static(path.join(__dirname, "/public")))
 
-const _tmpl$ = ["<div", "></div>"];
-
-const App = () => {
-  return web.ssr(_tmpl$, web.ssrHydrationKey());
-};
-
-const app = express__default["default"]();
-const port = 8080;
-app.use(express__default["default"].static(path__default["default"].join(__dirname, "../public")));
 app.get("*", (req, res) => {
-  let html;
+    let app
+    const tags = [] // mutated during render so you can include in server-rendered template later
+    try {
+        app = renderToString(() => (
+            <MetaProvider tags={tags}>
+                <App url={req.url} />
+            </MetaProvider>
+        ))
+    } catch (err) {
+        console.error(err)
+    } finally {
+        res.send(`
+            <!doctype html>
+            <html>
+                <head>
+                ${renderTags(tags)}
+                ${generateHydrationScript()}
+                </head>
+                <body>
+                <div id="root">${app}</div>
+                </body>
+            </html>
+            `)
+    }
+})
 
-  try {
-    html = web.renderToString(() => web.createComponent(App, {}));
-  } catch (err) {
-    console.error(err);
-  } finally {
-    res.send(html);
-  }
-});
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))

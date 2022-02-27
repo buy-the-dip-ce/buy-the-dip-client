@@ -18,8 +18,7 @@ const AppRoutes: Component = () => {
             <MatchRoute path="/posts">
                 <Posts />
             </MatchRoute>
-
-            <MatchRoute path="/">
+            <MatchRoute path="/" end>
                 <Home />
             </MatchRoute>
         </Switch>
