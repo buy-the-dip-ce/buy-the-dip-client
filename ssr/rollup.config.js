@@ -2,11 +2,11 @@ import nodeResolve from "@rollup/plugin-node-resolve"
 import common from "@rollup/plugin-commonjs"
 import babel from "@rollup/plugin-babel"
 import resolve from "@rollup/plugin-node-resolve"
-
-import copy from "rollup-plugin-copy"
 import typescript from "@rollup/plugin-typescript"
+import copy from "rollup-plugin-copy"
+import css from "rollup-plugin-import-css"
 
-const extensions = [".js", ".ts", ".tsx", ".jsx"]
+const extensions = [".js", ".ts", ".tsx", ".jsx", ".css"]
 
 export default [
     {
@@ -26,38 +26,24 @@ export default [
             }),
             resolve({ extensions, browser: true }),
             babel({
+                exclude: "**/*.css",
                 extensions,
                 babelHelpers: "bundled",
                 presets: [["solid", { generate: "ssr", hydratable: true }]],
             }),
+
             common(),
+            css(),
+            copy({
+                targets: [
+                    {
+                        src: ["**/*.css"],
+                        dest: "./ssr/dist/public",
+                    },
+                ],
+            }),
         ],
+
         preserveEntrySignatures: false,
     },
-    // {
-    //     input: "shared/src/index.js",
-    //     output: [
-    //         {
-    //             dir: "ssr/public/js",
-    //             format: "esm",
-    //         },
-    //     ],
-    //     preserveEntrySignatures: false,
-    //     plugins: [
-    //         nodeResolve({ exportConditions: ["solid"] }),
-    //         babel({
-    //             babelHelpers: "bundled",
-    //             presets: [["solid", { generate: "dom", hydratable: true }]],
-    //         }),
-    //         common(),
-    //         copy({
-    //             targets: [
-    //                 {
-    //                     src: ["examples/shared/static/*"],
-    //                     dest: "examples/ssr/public",
-    //                 },
-    //             ],
-    //         }),
-    //     ],
-    // },
 ]

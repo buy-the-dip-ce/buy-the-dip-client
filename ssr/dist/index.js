@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var web = require('solid-js/web');
 var express = require('express');
 var path = require('path');
@@ -10,43 +12,224 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 var express__default = /*#__PURE__*/_interopDefaultLegacy(express);
 var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 
-function bindEvent(target, type, handler) {
-  target.addEventListener(type, handler);
-  return () => target.removeEventListener(type, handler);
+function isWrappable(obj) {
+  return obj != null && typeof obj === "object" && (obj.__proto__ === Object.prototype || Array.isArray(obj));
 }
 
-function intercept([value, setValue], get, set) {
-  return [get ? () => get(value()) : value, set ? v => setValue(set(v)) : setValue];
+function setProperty(state, property, value, force) {
+  if (!force && state[property] === value) return;
+
+  if (value === undefined) {
+    delete state[property];
+  } else state[property] = value;
 }
 
-function createIntegration(get, set, init, utils) {
-  let ignore = false;
+function mergeStoreNode(state, value, force) {
+  const keys = Object.keys(value);
 
-  const wrap = value => typeof value === "string" ? {
-    value
-  } : value;
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    setProperty(state, key, value[key], force);
+  }
+}
 
-  const signal = intercept(solidJs.createSignal(wrap(get()), {
-    equals: (a, b) => a.value === b.value
-  }), undefined, next => {
-    !ignore && set(next);
-    return next;
-  });
-  init && solidJs.onCleanup(init((value = get()) => {
-    ignore = true;
-    signal[1](wrap(value));
-    ignore = false;
-  }));
-  return {
-    signal,
-    utils
+function updatePath(current, path, traversed = []) {
+  let part,
+      next = current;
+
+  if (path.length > 1) {
+    part = path.shift();
+    const partType = typeof part,
+          isArray = Array.isArray(current);
+
+    if (Array.isArray(part)) {
+      for (let i = 0; i < part.length; i++) {
+        updatePath(current, [part[i]].concat(path), traversed);
+      }
+
+      return;
+    } else if (isArray && partType === "function") {
+      for (let i = 0; i < current.length; i++) {
+        if (part(current[i], i)) updatePath(current, [i].concat(path), traversed);
+      }
+
+      return;
+    } else if (isArray && partType === "object") {
+      const {
+        from = 0,
+        to = current.length - 1,
+        by = 1
+      } = part;
+
+      for (let i = from; i <= to; i += by) {
+        updatePath(current, [i].concat(path), traversed);
+      }
+
+      return;
+    } else if (path.length > 1) {
+      updatePath(current[part], path, [part].concat(traversed));
+      return;
+    }
+
+    next = current[part];
+    traversed = [part].concat(traversed);
+  }
+
+  let value = path[0];
+
+  if (typeof value === "function") {
+    value = value(next, traversed);
+    if (value === next) return;
+  }
+
+  if (part === undefined && value == undefined) return;
+
+  if (part === undefined || isWrappable(next) && isWrappable(value) && !Array.isArray(value)) {
+    mergeStoreNode(next, value);
+  } else setProperty(current, part, value);
+}
+
+function createStore(state) {
+  function setStore(...args) {
+    updatePath(state, args);
+  }
+
+  return [state, setStore];
+}
+
+function reconcile(value, options = {}) {
+  return state => {
+    if (!isWrappable(state) || !isWrappable(value)) return value;
+    const targetKeys = Object.keys(value);
+
+    for (let i = 0, len = targetKeys.length; i < len; i++) {
+      const key = targetKeys[i];
+      setProperty(state, key, value[key]);
+    }
+
+    const previousKeys = Object.keys(state);
+
+    for (let i = 0, len = previousKeys.length; i < len; i++) {
+      if (value[previousKeys[i]] === undefined) setProperty(state, previousKeys[i], undefined);
+    }
+
+    return state;
   };
 }
+
+function regexparam (str, loose) {
+	if (str instanceof RegExp) return { keys:false, pattern:str };
+	var c, o, tmp, ext, keys=[], pattern='', arr = str.split('/');
+	arr[0] || arr.shift();
+
+	while (tmp = arr.shift()) {
+		c = tmp[0];
+		if (c === '*') {
+			keys.push('wild');
+			pattern += '/(.*)';
+		} else if (c === ':') {
+			o = tmp.indexOf('?', 1);
+			ext = tmp.indexOf('.', 1);
+			keys.push( tmp.substring(1, !!~o ? o : !!~ext ? ext : tmp.length) );
+			pattern += !!~o && !~ext ? '(?:/([^/]+?))?' : '/([^/]+?)';
+			if (!!~ext) pattern += (!!~o ? '?' : '') + '\\' + tmp.substring(ext);
+		} else {
+			pattern += '/' + tmp;
+		}
+	}
+
+	return {
+		keys: keys,
+		pattern: new RegExp('^' + pattern + (loose ? '(?=$|\/)' : '\/?$'), 'i')
+	};
+}
+
+const hasSchemeRegex = /^(?:[a-z0-9]+:)?\/\//i;
+const normalizeRegex = /^\/+|\/+$|\s+/;
+
+function normalize(path) {
+  const s = path.replace(normalizeRegex, '');
+  return s ? '/' + s : '';
+}
+
+function resolvePath(base, path, from) {
+  if (hasSchemeRegex.test(path)) {
+    return undefined;
+  }
+
+  const basePath = normalize(base);
+  const fromPath = from && normalize(from);
+  let result = '';
+
+  if (!fromPath || path.charAt(0) === '/') {
+    result = basePath;
+  } else if (fromPath.toLowerCase().indexOf(basePath.toLowerCase()) !== 0) {
+    result = basePath + fromPath;
+  } else {
+    result = fromPath;
+  }
+
+  return result + normalize(path) || '/';
+}
+function createMatcher(path, options) {
+  const {
+    keys,
+    pattern
+  } = regexparam(path, !options.end);
+  return p => {
+    const matches = pattern.exec(p);
+
+    if (!matches) {
+      return null;
+    }
+
+    const params = keys.reduce((acc, _, i) => {
+      acc[keys[i]] = matches[i + 1];
+      return acc;
+    }, {});
+    return [matches[0] || '/', params];
+  };
+}
+function parseQuery(queryString) {
+  return queryString.split('&').reduce((acc, pair) => {
+    const [key, value] = pair.split('=', 2);
+
+    if (key) {
+      acc[key.toLowerCase()] = value;
+    }
+
+    return acc;
+  }, {});
+}
+function renderPath(path) {
+  return path;
+}
+
+const MAX_REDIRECTS = 100;
+const RouterContext = solidJs.createContext();
+const RouteContext = solidJs.createContext();
+const useRouter = () => {
+  const router = solidJs.useContext(RouterContext);
+
+  if (!router) {
+    throw new Error('No router context defined - ensure your application is wrapped with a Router component');
+  }
+
+  return router;
+};
+const useRoute = () => solidJs.useContext(RouteContext) || useRouter().base;
+const defaultUtils = {
+  resolvePath,
+  createMatcher,
+  parseQuery,
+  renderPath
+};
+
 function normalizeIntegration(integration) {
   if (!integration) {
     return {
       signal: solidJs.createSignal({
-        value: ""
+        value: ''
       })
     };
   } else if (Array.isArray(integration)) {
@@ -57,409 +240,72 @@ function normalizeIntegration(integration) {
 
   return integration;
 }
-function staticIntegration(obj) {
-  return {
-    signal: [() => obj, next => Object.assign(obj, next)]
-  };
-}
-function pathIntegration() {
-  return createIntegration(() => ({
-    value: window.location.pathname + window.location.search + window.location.hash,
-    state: history.state
-  }), ({
-    value,
-    replace,
-    scroll,
-    state
-  }) => {
-    if (replace) {
-      window.history.replaceState(state, "", value);
-    } else {
-      window.history.pushState(state, "", value);
-    }
 
-    if (scroll) {
-      window.scrollTo(0, 0);
-    }
-  }, notify => bindEvent(window, "popstate", () => notify()), {
-    go: delta => window.history.go(delta)
-  });
-}
-
-const hasSchemeRegex = /^(?:[a-z0-9]+:)?\/\//i;
-const trimPathRegex = /^\/+|\/+$|\s+/g;
-
-function normalize(path) {
-  const s = path.replace(trimPathRegex, "");
-  return s ? s.startsWith("?") ? s : "/" + s : "";
-}
-
-function resolvePath(base, path, from) {
-  if (hasSchemeRegex.test(path)) {
-    return undefined;
-  }
-
-  const basePath = normalize(base);
-  const fromPath = from && normalize(from);
-  let result = "";
-
-  if (!fromPath || path.charAt(0) === "/") {
-    result = basePath;
-  } else if (fromPath.toLowerCase().indexOf(basePath.toLowerCase()) !== 0) {
-    result = basePath + fromPath;
-  } else {
-    result = fromPath;
-  }
-
-  return result + normalize(path) || "/";
-}
-function invariant(value, message) {
-  if (value == null) {
-    throw new Error(message);
-  }
-
-  return value;
-}
-function joinPaths(from, to) {
-  return normalize(from).replace(/\/*(\*.*)?$/g, "") + normalize(to);
-}
-function extractSearchParams(url) {
-  const params = {};
-  url.searchParams.forEach((value, key) => {
-    params[key] = value;
-  });
-  return params;
-}
-function createMatcher(path, partial) {
-  const [pattern, splat] = path.split("/*", 2);
-  const segments = pattern.split("/").filter(Boolean);
-  const len = segments.length;
-  return location => {
-    const locSegments = location.split("/").filter(Boolean);
-    const lenDiff = locSegments.length - len;
-
-    if (lenDiff < 0 || lenDiff > 0 && splat === undefined && !partial) {
-      return null;
-    }
-
-    const match = {
-      path: len ? "" : "/",
-      params: {}
-    };
-
-    for (let i = 0; i < len; i++) {
-      const segment = segments[i];
-      const locSegment = locSegments[i];
-
-      if (segment[0] === ":") {
-        match.params[segment.slice(1)] = locSegment;
-      } else if (segment.localeCompare(locSegment, undefined, {
-        sensitivity: "base"
-      }) !== 0) {
-        return null;
-      }
-
-      match.path += `/${locSegment}`;
-    }
-
-    if (splat) {
-      match.params[splat] = lenDiff ? locSegments.slice(-lenDiff).join("/") : "";
-    }
-
-    return match;
-  };
-}
-function scoreRoute(route) {
-  const [pattern, splat] = route.pattern.split("/*", 2);
-  const segments = pattern.split("/").filter(Boolean);
-  return segments.reduce((score, segment) => score + (segment.startsWith(":") ? 2 : 3), segments.length - (splat === undefined ? 0 : 1));
-}
-function createMemoObject(fn) {
-  const map = new Map();
-  const owner = solidJs.getOwner();
-  return new Proxy({}, {
-    get(_, property) {
-      if (!map.has(property)) {
-        solidJs.runWithOwner(owner, () => map.set(property, solidJs.createMemo(() => fn()[property])));
-      }
-
-      return map.get(property)();
-    },
-
-    getOwnPropertyDescriptor() {
-      return {
-        enumerable: true,
-        configurable: true
-      };
-    },
-
-    ownKeys() {
-      return Reflect.ownKeys(fn());
-    }
-
-  });
-}
-
-const MAX_REDIRECTS = 100;
-const RouterContextObj = solidJs.createContext();
-const RouteContextObj = solidJs.createContext();
-const useRouter = () => invariant(solidJs.useContext(RouterContextObj), "Make sure your app is wrapped in a <Router />");
-const useRoute = () => solidJs.useContext(RouteContextObj) || useRouter().base;
-function createRoute(routeDef, base = "", fallback) {
-  const {
-    path: originalPath,
-    component,
-    data,
-    children
-  } = routeDef;
-  const isLeaf = !children || Array.isArray(children) && !children.length;
-  const path = joinPaths(base, originalPath);
-  const pattern = isLeaf ? path : path.split("/*", 1)[0];
-  return {
-    originalPath,
-    pattern,
-    element: component ? () => solidJs.createComponent(component, {}) : () => {
-      const {
-        element
-      } = routeDef;
-      return element === undefined && fallback ? solidJs.createComponent(fallback, {}) : element;
-    },
-    preload: routeDef.component ? component.preload : routeDef.preload,
-    data,
-    matcher: createMatcher(pattern, !isLeaf)
-  };
-}
-function createBranch(routes, index = 0) {
-  return {
-    routes,
-    score: scoreRoute(routes[routes.length - 1]) * 10000 - index,
-
-    matcher(location) {
-      const matches = [];
-
-      for (let i = routes.length - 1; i >= 0; i--) {
-        const route = routes[i];
-        const match = route.matcher(location);
-
-        if (!match) {
-          return null;
-        }
-
-        matches.unshift({ ...match,
-          route
-        });
-      }
-
-      return matches;
-    }
-
-  };
-}
-function createBranches(routeDef, base = "", fallback, stack = [], branches = []) {
-  const routeDefs = Array.isArray(routeDef) ? routeDef : [routeDef];
-
-  for (let i = 0, len = routeDefs.length; i < len; i++) {
-    const def = routeDefs[i];
-
-    if (def && typeof def === 'object' && def.hasOwnProperty('path')) {
-      const route = createRoute(def, base, fallback);
-      stack.push(route);
-
-      if (def.children) {
-        createBranches(def.children, route.pattern, fallback, stack, branches);
-      } else {
-        const branch = createBranch([...stack], branches.length);
-        branches.push(branch);
-      }
-
-      stack.pop();
-    }
-  } // Stack will be empty on final return
-
-
-  return stack.length ? branches : branches.sort((a, b) => b.score - a.score);
-}
-function getRouteMatches(branches, location) {
-  for (let i = 0, len = branches.length; i < len; i++) {
-    const match = branches[i].matcher(location);
-
-    if (match) {
-      return match;
-    }
-  }
-
-  return [];
-}
-function createLocation(path, state) {
-  const origin = new URL("http://sar");
-  const url = solidJs.createMemo(prev => {
-    const path_ = path();
-
-    try {
-      return new URL(path_, origin);
-    } catch (err) {
-      console.error(`Invalid path ${path_}`);
-      return prev;
-    }
-  }, origin, {
-    equals: (a, b) => a.href === b.href
-  });
-  const pathname = solidJs.createMemo(() => url().pathname);
-  const search = solidJs.createMemo(() => url().search.slice(1));
-  const hash = solidJs.createMemo(() => url().hash.slice(1));
-  const key = solidJs.createMemo(() => "");
-  return {
-    get pathname() {
-      return pathname();
-    },
-
-    get search() {
-      return search();
-    },
-
-    get hash() {
-      return hash();
-    },
-
-    get state() {
-      return state();
-    },
-
-    get key() {
-      return key();
-    },
-
-    query: createMemoObject(solidJs.on(search, () => extractSearchParams(url())))
-  };
-}
-function createRouterContext(integration, base = "", data, out) {
+function createRouter(integration, basePath = '', overrides) {
   const {
     signal: [source, setSource],
-    utils = {}
+    utils: intUtils
   } = normalizeIntegration(integration);
-  const basePath = resolvePath("", base);
-  const output = web.isServer && out ? Object.assign(out, {
-    matches: [],
-    url: undefined
-  }) : undefined;
+  const utils = { ...defaultUtils,
+    ...intUtils,
+    ...overrides
+  };
+  const path = utils.resolvePath('', basePath);
 
-  if (basePath === undefined) {
+  if (path === undefined) {
     throw new Error(`${basePath} is not a valid base path`);
-  } else if (basePath && !source().value) {
+  } else if (path && !source().value) {
     setSource({
-      value: basePath,
-      replace: true,
-      scroll: false
+      value: path,
+      mode: 'init'
     });
   }
 
+  const baseRoute = createRouteState(utils, path, path, false, () => [path, {}]);
+  const referrers = [];
   const [isRouting, start] = solidJs.useTransition();
   const [reference, setReference] = solidJs.createSignal(source().value);
-  const [state, setState] = solidJs.createSignal(source().state);
-  const location = createLocation(reference, state);
-  const referrers = [];
-  const baseRoute = {
-    pattern: basePath,
-    params: {},
-    path: () => basePath,
-    outlet: () => null,
+  const [location] = createStore({
+    get path() {
+      return reference().split('?', 1)[0];
+    },
 
-    resolvePath(to) {
-      return resolvePath(basePath, to);
+    get queryString() {
+      return reference().split('?', 2)[1] || '';
     }
 
-  };
-  baseRoute.data = data && data({
-    data: undefined,
-    params: {},
-    location,
-    navigate: navigatorFactory(baseRoute)
   });
 
-  function navigateFromRoute(route, to, options) {
-    // Untrack in case someone navigates in an effect - don't want to track `reference` or route paths
-    solidJs.untrack(() => {
-      if (typeof to === "number") {
-        if (!to) ; else if (utils.go) {
-          utils.go(to);
-        } else {
-          console.warn("Router integration does not support relative routing");
-        }
+  function redirect(mode, to, options = {
+    resolve: false
+  }) {
+    const currentRoute = solidJs.useContext(RouteContext) || baseRoute;
+    const resolvedTo = options.resolve ? currentRoute.resolvePath(to) : utils.resolvePath('', to);
 
-        return;
-      }
+    if (resolvedTo === undefined) {
+      throw new Error(`Path '${path}' is not a routable path`);
+    }
 
-      const {
-        replace,
-        resolve,
-        scroll,
-        state: nextState
-      } = {
-        replace: false,
-        resolve: true,
-        scroll: true,
-        ...options
-      };
-      const resolvedTo = resolve ? route.resolvePath(to) : resolvePath("", to);
-
-      if (resolvedTo === undefined) {
-        throw new Error(`Path '${to}' is not a routable path`);
-      } else if (referrers.length >= MAX_REDIRECTS) {
-        throw new Error("Too many redirects");
-      }
-
-      const current = reference();
-
-      if (resolvedTo !== current || nextState !== state()) {
-        if (web.isServer) {
-          if (output) {
-            output.url = resolvedTo;
-          }
-
-          setSource({
-            value: resolvedTo,
-            replace,
-            scroll,
-            state: nextState
-          });
-        } else {
-          const len = referrers.push({
-            value: current,
-            replace,
-            scroll,
-            state
-          });
-          start(() => {
-            setReference(resolvedTo);
-            setState(nextState);
-            solidJs.resetErrorBoundaries();
-          }).then(() => {
-            if (referrers.length === len) {
-              navigateEnd({
-                value: resolvedTo,
-                state: nextState
-              });
-            }
-          });
-        }
-      }
+    const redirectCount = referrers.push({
+      ref: solidJs.untrack(reference),
+      mode
     });
+
+    if (redirectCount > MAX_REDIRECTS) {
+      throw new Error('Too many redirects');
+    }
+
+    start(() => setReference(resolvedTo));
   }
 
-  function navigatorFactory(route) {
-    // Workaround for vite issue (https://github.com/vitejs/vite/issues/3803)
-    route = route || solidJs.useContext(RouteContextObj) || baseRoute;
-    return (to, options) => navigateFromRoute(route, to, options);
-  }
-
-  function navigateEnd(next) {
-    const first = referrers[0];
+  function handleRouteEnd(nextRef) {
+    const first = referrers.shift();
 
     if (first) {
-      if (next.value !== first.value || next.state !== first.state) {
-        setSource({ ...next,
-          replace: first.replace,
-          scroll: first.scroll
+      if (nextRef !== first.ref) {
+        setSource({
+          value: nextRef,
+          mode: first.mode
         });
       }
 
@@ -468,224 +314,229 @@ function createRouterContext(integration, base = "", data, out) {
   }
 
   solidJs.createRenderEffect(() => {
-    const {
-      value,
-      state
-    } = source();
-
-    if (value !== solidJs.untrack(reference)) {
-      start(() => {
-        setReference(value);
-        setState(state);
-      });
-    }
+    start(() => setReference(source().value));
   });
-
-  if (!web.isServer) {
-    function handleAnchorClick(evt) {
-      if (evt.defaultPrevented || evt.button !== 0 || evt.metaKey || evt.altKey || evt.ctrlKey || evt.shiftKey) return;
-      const a = evt.composedPath().find(el => el instanceof Node && el.nodeName.toUpperCase() === "A");
-      if (!a) return;
-      const isSvg = a instanceof SVGAElement;
-      const href = isSvg ? a.href.baseVal : a.href;
-      const target = isSvg ? a.target.baseVal : a.target;
-      if (target || !href && !a.hasAttribute('state')) return;
-      const rel = (a.getAttribute("rel") || "").split(/\s+/);
-      if (a.hasAttribute("download") || rel && rel.includes("external")) return;
-      const url = isSvg ? new URL(href, document.baseURI) : new URL(href);
-      if (url.origin !== window.location.origin || basePath && url.pathname && !url.pathname.toLowerCase().startsWith(basePath.toLowerCase())) return;
-      const to = url.pathname + url.search + url.hash;
-      const state = a.getAttribute("state");
-      evt.preventDefault();
-      navigateFromRoute(baseRoute, to, {
-        resolve: false,
-        replace: a.hasAttribute("replace"),
-        scroll: !a.hasAttribute("noscroll"),
-        state: state && JSON.parse(state)
-      });
-    }
-
-    document.addEventListener("click", handleAnchorClick);
-    solidJs.onCleanup(() => document.removeEventListener("click", handleAnchorClick));
-  }
-
+  solidJs.createRenderEffect(() => {
+    handleRouteEnd(reference());
+  });
   return {
     base: baseRoute,
-    out: output,
     location,
+    query: createMapMemo(() => location.queryString ? utils.parseQuery(location.queryString) : {}),
     isRouting,
-    renderPath: utils.renderPath || (path => path),
-    navigatorFactory
-  };
-}
-function createRouteContext(router, parent, child, match) {
-  const {
-    base,
-    location,
-    navigatorFactory
-  } = router;
-  const {
-    pattern,
-    element: outlet,
-    preload,
-    data
-  } = match().route;
-  const path = solidJs.createMemo(() => match().path);
-  const params = createMemoObject(() => match().params);
-  preload && preload();
-  const route = {
-    parent,
-    pattern,
+    utils,
 
-    get child() {
-      return child();
+    push(to, options) {
+      redirect('push', to, options);
     },
 
-    path,
-    params,
-    outlet,
-
-    resolvePath(to) {
-      return resolvePath(base.path(), to, path());
+    replace(to, options) {
+      redirect('replace', to, options);
     }
 
   };
-  route.data = data ? data({
-    data: parent.data,
-    params,
-    location,
-    navigate: navigatorFactory(route)
-  }) : parent.data;
-  return route;
+}
+function createRoute(pattern = '', end = false) {
+  const router = useRouter();
+  const parent = useRoute();
+  const path = parent.resolvePath(pattern);
+
+  if (path === undefined) {
+    throw new Error(`${pattern} is not a valid path`);
+  }
+
+  if (parent.end && !end) {
+    throw new Error(`Route '${path}' parent is a terminal route`);
+  }
+
+  const matcher = router.utils.createMatcher(path, {
+    end
+  });
+  const match = solidJs.createMemo(() => matcher(router.location.path));
+  return createRouteState(router.utils, router.base.path, path, end, match);
+}
+function createRouteState(utils, basePath, path, end, matchSignal) {
+  const match = solidJs.createMemo(() => {
+    const routeMatch = matchSignal();
+    return routeMatch ? routeMatch[0] : undefined;
+  });
+  return {
+    path,
+    end,
+    match,
+    params: createMapMemo(() => {
+      const routeMatch = matchSignal();
+      return routeMatch ? routeMatch[1] : {};
+    }),
+
+    resolvePath(path) {
+      const matchPath = match();
+      return matchPath !== undefined ? utils.resolvePath(basePath, path, matchPath) : undefined;
+    }
+
+  };
 }
 
-const Router = props => {
+function createMapMemo(fn) {
+  const map = solidJs.createMemo(fn);
+  const data = solidJs.createMemo(map, undefined, {
+    equals: (a, b) => {
+      reconcile(b, {
+        key: null
+      })(a);
+      return true;
+    }
+  });
+  const [state] = createStore({
+    get map() {
+      return data();
+    }
+
+  });
+  return new Proxy({}, {
+    get(_, key) {
+      return state.map[key];
+    },
+
+    ownKeys() {
+      return Reflect.ownKeys(map());
+    },
+
+    getOwnPropertyDescriptor() {
+      return {
+        enumerable: true,
+        configurable: true
+      };
+    }
+
+  });
+}
+
+function MatchRoute(props) {
+  return web.createComponent(Route, web.mergeProps(props, {
+    component: solidJs.Match
+  }));
+}
+
+function renderChildren(props, args) {
+  const children = props.children;
+  return typeof children === 'function' && children.length ? solidJs.untrack(() => children(...args)) : children;
+}
+
+function Route(props) {
   const {
-    source,
-    url,
-    base,
-    data,
-    out
+    path,
+    end,
+    component: Comp = solidJs.Show
   } = props;
-  const integration = source || (web.isServer ? staticIntegration({
-    value: url || ""
-  }) : pathIntegration());
-  const routerState = createRouterContext(integration, base, data, out);
-  return web.createComponent(RouterContextObj.Provider, {
-    value: routerState,
+  const router = useRouter();
+  const route = createRoute(path, end);
+  return web.createComponent(Comp, {
+    get when() {
+      return route.match() !== undefined;
+    },
+
+    get children() {
+      return web.createComponent(RouteContext.Provider, {
+        value: route,
+
+        get children() {
+          return renderChildren(props, [route, router]);
+        }
+
+      });
+    }
+
+  });
+}
+function Router(props) {
+  const {
+    integration,
+    basePath,
+    utils
+  } = props;
+  const router = createRouter(integration, basePath, utils);
+  return web.createComponent(RouterContext.Provider, {
+    value: router,
 
     get children() {
       return props.children;
     }
 
   });
-};
-const Routes = props => {
-  const router = useRouter();
-  const parentRoute = useRoute();
-  const branches = solidJs.createMemo(() => createBranches(props.children, joinPaths(parentRoute.pattern, props.base || ""), Outlet));
-  const matches = solidJs.createMemo(() => getRouteMatches(branches(), router.location.pathname));
+}
 
-  if (router.out) {
-    router.out.matches.push(matches().map(({
-      route,
-      path,
-      params
-    }) => ({
-      originalPath: route.originalPath,
-      pattern: route.pattern,
-      path,
-      params
-    })));
-  }
+function bindEvent(target, type, handler) {
+  target.addEventListener(type, handler);
+  return () => target.removeEventListener(type, handler);
+}
 
-  const disposers = [];
-  let root;
-  const routeStates = solidJs.createMemo(solidJs.on(matches, (nextMatches, prevMatches, prev) => {
-    let equal = prevMatches && nextMatches.length === prevMatches.length;
-    const next = [];
+function intercept(signal, get, set) {
+  const [value, setValue] = signal;
+  return [get ? () => get(value()) : value, set ? v => setValue(set(v)) : setValue];
+}
 
-    for (let i = 0, len = nextMatches.length; i < len; i++) {
-      const prevMatch = prevMatches && prevMatches[i];
-      const nextMatch = nextMatches[i];
-
-      if (prev && prevMatch && nextMatch.route.pattern === prevMatch.route.pattern) {
-        next[i] = prev[i];
-      } else {
-        equal = false;
-
-        if (disposers[i]) {
-          disposers[i]();
-        }
-
-        solidJs.createRoot(dispose => {
-          disposers[i] = dispose;
-          next[i] = createRouteContext(router, next[i - 1] || parentRoute, () => routeStates()[i + 1], () => matches()[i]);
-        });
-      }
-    }
-
-    disposers.splice(nextMatches.length).forEach(dispose => dispose());
-
-    if (prev && equal) {
-      return prev;
-    }
-
-    root = next[0];
+function createIntegration(get, set, init, utils) {
+  const signal = intercept(solidJs.createSignal({
+    value: get()
+  }, {
+    equals: (a, b) => a.value === b.value
+  }), undefined, next => {
+    const {
+      value,
+      mode
+    } = next;
+    mode && set(value, mode);
     return next;
+  });
+  init && solidJs.onCleanup(init((value = get()) => {
+    signal[1]({
+      value
+    });
   }));
-  return web.createComponent(solidJs.Show, {
-    get when() {
-      return routeStates() && root;
-    },
+  return {
+    signal,
+    utils
+  };
+}
+function pathIntegration() {
+  return createIntegration(() => window.location.pathname + window.location.search, (value, mode) => {
+    if (mode === 'push') {
+      window.history.pushState(null, '', value);
+    } else {
+      window.history.replaceState(null, '', value);
+    }
+  }, notify => bindEvent(window, 'popstate', () => notify()));
+}
 
-    children: route => web.createComponent(RouteContextObj.Provider, {
-      value: route,
-
-      get children() {
-        return route.outlet();
-      }
-
-    })
-  });
-};
-const Route = props => props;
-const Outlet = () => {
-  const route = useRoute();
-  return web.createComponent(solidJs.Show, {
-    get when() {
-      return route.child;
-    },
-
-    children: child => web.createComponent(RouteContextObj.Provider, {
-      value: child,
-
-      get children() {
-        return child.outlet();
-      }
-
-    })
-  });
-};
-
-const Home = solidJs.lazy(() => Promise.resolve().then(function () { return require('./index-d70db70f.js'); }));
-const NotFound = solidJs.lazy(() => Promise.resolve().then(function () { return require('./404-a6bf94d6.js'); }));
+const _tmpl$ = ["<div", ">404</div>"];
+const Posts = solidJs.lazy(() => Promise.resolve().then(function () { return require('./index-5b3fda9a.js'); }));
+const PostDetail = solidJs.lazy(() => Promise.resolve().then(function () { return require('./index-9d36b72c.js'); }));
+const Home = solidJs.lazy(() => Promise.resolve().then(function () { return require('./index-f24e0c08.js'); }));
+solidJs.lazy(() => Promise.resolve().then(function () { return require('./404-a6bf94d6.js'); }));
 
 const AppRoutes = () => {
-  return web.createComponent(Routes, {
-    get children() {
-      return [web.createComponent(Route, {
-        path: "/",
+  return web.createComponent(solidJs.Switch, {
+    get fallback() {
+      return web.ssr(_tmpl$, web.ssrHydrationKey());
+    },
 
-        get element() {
-          return web.createComponent(Home, {});
+    get children() {
+      return [web.createComponent(MatchRoute, {
+        path: "/posts/:id",
+        children: route => web.createComponent(PostDetail, {})
+      }), web.createComponent(MatchRoute, {
+        path: "/posts",
+
+        get children() {
+          return web.createComponent(Posts, {});
         }
 
-      }), web.createComponent(Route, {
-        path: "/*all",
+      }), web.createComponent(MatchRoute, {
+        path: "/",
 
-        get element() {
-          return web.createComponent(NotFound, {});
+        get children() {
+          return web.createComponent(Home, {});
         }
 
       })];
@@ -694,8 +545,16 @@ const AppRoutes = () => {
   });
 };
 
-const App = () => {
+const App = ({
+  url
+}) => {
   return web.createComponent(Router, {
+    get integration() {
+      return web.isServer ? solidJs.createSignal({
+        value: url
+      }) : pathIntegration();
+    },
+
     get children() {
       return web.createComponent(AppRoutes, {});
     }
@@ -703,18 +562,194 @@ const App = () => {
   });
 };
 
+const MetaContext = solidJs.createContext();
+const cascadingTags = ["title", "meta"];
+
+const MetaProvider = props => {
+  const indices = new Map(),
+        [tags, setTags] = solidJs.createSignal({});
+  solidJs.onMount(() => {
+    const ssrTags = document.head.querySelectorAll(`[data-sm=""]`); // `forEach` on `NodeList` is not supported in Googlebot, so use a workaround
+
+    Array.prototype.forEach.call(ssrTags, ssrTag => ssrTag.parentNode.removeChild(ssrTag));
+  });
+  const actions = {
+    addClientTag: (tag, name) => {
+      // consider only cascading tags
+      if (cascadingTags.indexOf(tag) !== -1) {
+        setTags(tags => {
+          const names = tags[tag] || [];
+          return { ...tags,
+            [tag]: [...names, name]
+          };
+        }); // track indices synchronously
+
+        const index = indices.has(tag) ? indices.get(tag) + 1 : 0;
+        indices.set(tag, index);
+        return index;
+      }
+
+      return -1;
+    },
+    shouldRenderTag: (tag, index) => {
+      if (cascadingTags.indexOf(tag) !== -1) {
+        const names = tags()[tag]; // check if the tag is the last one of similar
+
+        return names && names.lastIndexOf(names[index]) === index;
+      }
+
+      return true;
+    },
+    removeClientTag: (tag, index) => {
+      setTags(tags => {
+        const names = tags[tag];
+
+        if (names) {
+          names[index] = null;
+          return { ...tags,
+            [tag]: names
+          };
+        }
+
+        return tags;
+      });
+    }
+  };
+
+  if (web.isServer) {
+    actions.addServerTag = tagDesc => {
+      const {
+        tags = []
+      } = props; // tweak only cascading tags
+
+      if (cascadingTags.indexOf(tagDesc.tag) !== -1) {
+        const index = tags.findIndex(prev => {
+          const prevName = prev.props.name || prev.props.property;
+          const nextName = tagDesc.props.name || tagDesc.props.property;
+          return prev.tag === tagDesc.tag && prevName === nextName;
+        });
+
+        if (index !== -1) {
+          tags.splice(index, 1);
+        }
+      }
+
+      tags.push(tagDesc);
+    };
+
+    if (Array.isArray(props.tags) === false) {
+      throw Error("tags array should be passed to <MetaProvider /> in node");
+    }
+  }
+
+  return web.createComponent(MetaContext.Provider, {
+    value: actions,
+
+    get children() {
+      return props.children;
+    }
+
+  });
+};
+
+const MetaTag = (tag, props) => {
+  const c = solidJs.useContext(MetaContext);
+  if (!c) throw new Error("<MetaProvider /> should be in the tree");
+  const {
+    addClientTag,
+    removeClientTag,
+    addServerTag,
+    shouldRenderTag
+  } = c;
+  let index = -1;
+  solidJs.createComputed(() => {
+    index = addClientTag(tag, props.name || props.property);
+    solidJs.onCleanup(() => removeClientTag(tag, index));
+  });
+
+  if (web.isServer) {
+    addServerTag({
+      tag,
+      props
+    });
+    return null;
+  }
+
+  return web.createComponent(web.Show, {
+    get when() {
+      return shouldRenderTag(tag, index);
+    },
+
+    get children() {
+      return web.createComponent(web.Portal, {
+        get mount() {
+          return document.head;
+        },
+
+        get children() {
+          return web.createComponent(web.Dynamic, web.mergeProps({
+            component: tag
+          }, props));
+        }
+
+      });
+    }
+
+  });
+};
+function renderTags(tags) {
+  return tags.map(tag => {
+    const keys = Object.keys(tag.props);
+    const props = keys.map(k => k === "children" ? "" : ` ${k}="${tag.props[k]}"`).join("");
+    return tag.props.children ? `<${tag.tag} data-sm=""${props}>${// Tags might contain multiple text children:
+    //   <Title>example - {myCompany}</Title>
+    Array.isArray(tag.props.children) ? tag.props.children.join("") : tag.props.children}</${tag.tag}>` : `<${tag.tag} data-sm=""${props}/>`;
+  }).join("");
+}
+const Title = props => MetaTag("title", props);
+const Meta = props => MetaTag("meta", props);
+const Link = props => MetaTag("link", props);
+
 const app = express__default["default"]();
 const port = 8080;
 app.use(express__default["default"].static(path__default["default"].join(__dirname, "../public")));
 app.get("*", (req, res) => {
-  let html;
+  let app;
+  const tags = []; // mutated during render so you can include in server-rendered template later
 
   try {
-    html = web.renderToString(() => web.createComponent(App, {}));
+    app = web.renderToString(() => web.createComponent(MetaProvider, {
+      tags: tags,
+
+      get children() {
+        return web.createComponent(App, {
+          get url() {
+            return req.url;
+          }
+
+        });
+      }
+
+    }));
   } catch (err) {
     console.error(err);
   } finally {
-    res.send(html);
+    res.send(`
+            <!doctype html>
+            <html>
+                <head>
+                ${renderTags(tags)}
+                ${web.generateHydrationScript()}
+                </head>
+                <body>
+                <div id="root">${app}</div>
+                </body>
+            </html>
+            `);
   }
 });
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+exports.Link = Link;
+exports.Meta = Meta;
+exports.Title = Title;

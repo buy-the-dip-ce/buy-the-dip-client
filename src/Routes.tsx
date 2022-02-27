@@ -1,22 +1,28 @@
 import type { Component } from "solid-js"
+import { Switch } from "solid-js"
 import { lazy } from "solid-js"
-import { Routes, Route } from "solid-app-router"
+import { MatchRoute, Route } from "@rturnq/solid-router"
+
+const Posts = lazy(() => import("./pages/posts/index"))
+const PostDetail = lazy(() => import("./pages/posts/[id]/index"))
 
 const Home = lazy(() => import("./pages/index"))
 const NotFound = lazy(() => import("./pages/404"))
 
 const AppRoutes: Component = () => {
     return (
-        <Routes>
-            {/* <Route path="/users" element={<Users />} />
-            <Route path="/users/:id" element={<User />}>
-                <Route path="/" element={<UserHome />} />
-                <Route path="/settings" element={<UserSettings />} />
-                <Route path="/*all" element={<UserNotFound />} />
-            </Route> */}
-            <Route path="/" element={<Home />} />
-            <Route path="/*all" element={<NotFound />} />
-        </Routes>
+        <Switch fallback={<div>404</div>}>
+            <MatchRoute path="/posts/:id">
+                {(route) => <PostDetail />}
+            </MatchRoute>
+            <MatchRoute path="/posts">
+                <Posts />
+            </MatchRoute>
+
+            <MatchRoute path="/">
+                <Home />
+            </MatchRoute>
+        </Switch>
     )
 }
 
