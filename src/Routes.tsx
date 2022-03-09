@@ -13,7 +13,7 @@ const AppRoutes: Component = () => {
     return (
         <Switch fallback={<div>404</div>}>
             <MatchRoute path="/posts/:id">
-                {(route) => <PostDetail />}
+                {() => <PostDetail />}
             </MatchRoute>
             <MatchRoute path="/posts">
                 <Posts />

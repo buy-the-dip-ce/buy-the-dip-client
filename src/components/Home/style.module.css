@@ -1,3 +1,212 @@
 .home {
     background-color: red;
 }
+
+.contentsWrapper {
+    display: flex;
+}
+
+.contentsAside {
+    width: 260px;
+    height: 100vh;
+    background-color: var(--grey300);
+    padding-top: 39px;
+    padding-left: 29px;
+}
+
+.logoTitle {
+    font-size: var(--medium4);
+    font-weight: bold;
+    color: var(--cyan600);
+    margin-bottom: 95px;
+}
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+}
+
+.navigation a {
+    font-size: var(--medium2);
+    color: var(--grey700);
+    font-weight: bold;
+    margin-bottom: var(--medium4);
+}
+
+.contents {
+    width: 100%;
+    padding-left: var(--medium6);
+    padding-right: var(--medium6);
+    padding-top: var(--tlarge);
+}
+
+.contentsTitle {
+    font-size: var(--medium3);
+    color: var(--black500);
+    font-weight: bold;
+}
+
+.subInfo {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.contentsSubTitle {
+    font-size: var(--small6);
+    color: var(--grey500);
+    margin-top: var(--small2);
+}
+
+.date {
+    color: var(--grey500);
+    font-size: var(--small6);
+    font-weight: bold;
+}
+
+.porfolioList {
+    display: block;
+    margin-top: var(--medium3);
+}
+
+.porfolioItem {
+    display: block;
+    margin-bottom: var(--medium6);
+}
+.porfolioItem:last-child {
+    margin-bottom: var(--medium3);
+}
+
+.portfolioHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--small5);
+}
+
+.category {
+    font-size: var(--medium2);
+    color: var(--black500);
+    font-weight: bold;
+}
+
+.addStockButton {
+    height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--grey500);
+    background-color: var(--grey300);
+    font-size: var(--medium1);
+    border-radius: var(--small3);
+    cursor: pointer;
+}
+
+.portfolio {
+    display: block;
+    border-radius: var(--small3);
+    overflow: hidden;
+}
+
+.portfolioTableHeader {
+    display: grid;
+    height: 53px;
+    grid-template-columns: 60px 300px 120px 120px 120px auto;
+    background-color: var(--grey400);
+}
+
+.portfolioTableHeader div {
+    position: relative;
+    font-size: var(--medium1);
+    font-weight: bold;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.portfolioTableHeader div::after {
+    position: absolute;
+    right: 0;
+    content: "";
+    width: 1px;
+    height: var(--medium6);
+    border-radius: var(--small3);
+    background-color: var(--grey500);
+}
+
+.portfolioTableHeader :last-child::after {
+    content: none;
+}
+
+.portolioTableBorder {
+    width: 100%;
+    height: 1px;
+    background-color: var(--grey600);
+}
+
+.portfolioTableItem {
+    display: grid;
+    height: 53px;
+    grid-template-columns: 60px 300px 120px 120px 120px auto;
+    background-color: var(--grey450);
+}
+
+.portfolioTableItem div {
+    position: relative;
+    font-size: var(--medium1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.portfolioTableItem div::after {
+    position: absolute;
+    right: 0;
+    content: "";
+    width: 1px;
+    height: var(--medium6);
+    border-radius: var(--small3);
+    background-color: var(--grey500);
+}
+
+.portfolioTableItem :last-child::after {
+    content: none;
+}
+
+.portfolioItemPlusGraphGradient {
+    position: absolute !important;
+    height: 37px;
+    left: -45px;
+    background: linear-gradient(
+        90deg,
+        rgba(244, 248, 250, 0) 0%,
+        rgba(255, 0, 0, 0.5) 100%
+    );
+    border-radius: 3px;
+}
+
+.portfolioItemMinusGraphGradient {
+    position: absolute !important;
+    height: 37px;
+    left: -45px;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 51, 195, 0.5) 0%,
+        rgba(244, 248, 250, 0) 100%
+    );
+    border-radius: 3px;
+}
+
+.addCategory {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 55px;
+    font-size: var(--medium1);
+    font-weight: bold;
+    color: var(--grey500);
+    cursor: pointer;
+    border-radius: 5px;
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23C4C4C4FF' stroke-width='4' stroke-dasharray='17' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+}

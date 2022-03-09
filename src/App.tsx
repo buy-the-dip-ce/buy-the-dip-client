@@ -5,6 +5,7 @@ import { isServer } from "solid-js/web"
 import Routes from "./Routes"
 import { Router, pathIntegration } from "@rturnq/solid-router"
 import "./styles/index.css"
+import "./styles/palette.css"
 
 const App: Component<{ url?: string }> = ({ url }) => {
     return (

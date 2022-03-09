@@ -1,0 +1,36 @@
+* {
+    /* font-size */
+    /* 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 */
+    /* 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199 */
+
+    --tlarge: 127px;
+
+    --large6: 61px;
+    --large5: 59px;
+    --large4: 53px;
+    --large3: 47px;
+    --large2: 43px;
+    --large1: 41px;
+    --medium6: 37px;
+    --medium5: 31px;
+    --medium4: 29px;
+    --medium3: 23px;
+    --medium2: 19px;
+    --medium1: 17px;
+    --small6: 13px;
+    --small5: 11px;
+    --small4: 7px;
+    --small3: 5px;
+    --small2: 3px;
+    --small1: 2px;
+
+    --black500: #333333;
+    --grey300: #f7f9fa;
+    --grey400: #f8f8f8;
+    --grey450: #f4f8fa;
+    --grey500: #c4c4c4;
+    --grey600: #d8dcde;
+    --grey700: #868d92;
+
+    --cyan600: #2a8ba9;
+}
