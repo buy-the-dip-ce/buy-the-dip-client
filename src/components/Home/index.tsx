@@ -1,7 +1,9 @@
 import type { Component } from "solid-js"
-import { MetaProvider, Title, Meta } from "solid-meta"
+import { Title, Meta } from "solid-meta"
 import { Link } from "@rturnq/solid-router"
 import styles from "./style.module.css"
+import { lazy } from "solid-js"
+const AddStockButton = lazy(() => import("./AddStockButton"))
 
 const Home: Component = () => {
     return (
@@ -31,13 +33,7 @@ const Home: Component = () => {
                                 <div class={styles.portfolioHeader}>
                                     <h4 class={styles.category}>여행관련</h4>
 
-                                    <button
-                                        class={styles.addStockButton}
-                                        type="button"
-                                        onClick={() => {}}
-                                    >
-                                        + 주식 추가하기
-                                    </button>
+                                    <AddStockButton />
                                 </div>
                                 <div class={styles.portfolio}>
                                     <div class={styles.portfolioTableHeader}>

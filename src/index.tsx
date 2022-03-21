@@ -1,5 +1,6 @@
 /* @refresh reload */
-import { hydrate } from "solid-js/web"
+import * as solid from "solid-js/web"
 import App from "./App"
 
-hydrate(() => <App />, document.getElementById("root") as HTMLElement)
+solid.hydrate(() => <App />, document.getElementById("root") as HTMLDivElement)
+console.log("hydreated")

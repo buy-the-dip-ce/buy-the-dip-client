@@ -45,4 +45,38 @@ export default [
 
         preserveEntrySignatures: false,
     },
+    {
+        input: "src/index.tsx",
+        output: [
+            {
+                dir: "./dist/public",
+                format: "esm",
+            },
+        ],
+        sourceMap: "inline",
+
+        plugins: [
+            typescript(),
+            nodeResolve({
+                exportConditions: ["solid"],
+                extensions: [".mjs", ".js", ".jsx", ".json"],
+            }),
+
+            babel({
+                exclude: "src/**/*.css",
+
+                extensions,
+                babelHelpers: "bundled",
+
+                presets: [["solid", { generate: "dom", hydratable: true }]],
+            }),
+
+            common({ include: "node_modules/**" }),
+            postcss({
+                extensions: [".css"],
+            }),
+        ],
+
+        preserveEntrySignatures: false,
+    },
 ]

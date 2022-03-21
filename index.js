@@ -14,11 +14,7 @@ app.get("*", (req, res) => {
     let app
     const tags = [] // mutated during render so you can include in server-rendered template later
     try {
-        app = renderToString(() => (
-            <MetaProvider tags={tags}>
-                <App url={req.url} />
-            </MetaProvider>
-        ))
+        app = renderToString(() => <App url={req.url} />)
     } catch (err) {
         console.error(err)
     } finally {
@@ -26,10 +22,12 @@ app.get("*", (req, res) => {
             <!doctype html>
             <html>
                 <head>
-                ${renderTags(tags)}
                 ${generateHydrationScript()}
+                
                 </head>
                 <body>
+                <script type="module" src="/index.js" async></script>
+
                 <div id="root">${app}</div>
                 </body>
             </html>
