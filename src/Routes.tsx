@@ -1,7 +1,8 @@
 import type { Component } from "solid-js"
 import { Switch } from "solid-js"
 import { lazy } from "solid-js"
-import { MatchRoute, Route } from "@rturnq/solid-router"
+import { MatchRoute } from "@rturnq/solid-router"
+import PortfolioPage from "./components/portfolio/PortfolioPage/index"
 
 const Posts = lazy(() => import("./pages/posts/index"))
 const PostDetail = lazy(() => import("./pages/posts/[id]/index"))
@@ -12,8 +13,11 @@ const NotFound = lazy(() => import("./pages/404"))
 const AppRoutes: Component = () => {
     return (
         <Switch fallback={<div>404</div>}>
+            <MatchRoute path="/portfolios/:id">
+                <PortfolioPage />
+            </MatchRoute>
             <MatchRoute path="/posts/:id">
-                {() => <PostDetail />}
+                <PostDetail />
             </MatchRoute>
             <MatchRoute path="/posts">
                 <Posts />

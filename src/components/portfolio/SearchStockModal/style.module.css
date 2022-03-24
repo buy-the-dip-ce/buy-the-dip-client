@@ -1,0 +1,53 @@
+/* SearchStockModal */
+.searchStockWrapper {
+    width: 640px;
+    height: 400px;
+    padding: var(--medium3) var(--medium1);
+}
+.searchStockTitle {
+    font-size: var(--medium1);
+    font-weight: bold;
+    margin-bottom: var(--small4);
+}
+
+.searchStockKeywordInput {
+    width: 100%;
+    height: var(--large2);
+    font-size: var(--medium1);
+    font-weight: normal;
+    border-radius: var(--small3);
+    padding: var(--small5) var(--small6);
+    border: 1px solid var(--grey500);
+    margin-bottom: var(--small4);
+}
+
+.searchStockKeywordInput::placeholder {
+    font-size: var(--medium1);
+    font-weight: normal;
+    color: var(--grey700);
+}
+
+.searchStockResult {
+    width: 100%;
+    max-height: 239px;
+    border-radius: var(--small3);
+    border: 1px solid var(--grey500);
+}
+
+.searchStockResultItem {
+    width: 100%;
+    padding: var(--small5) var(--small6);
+
+    font-size: var(--medium1);
+    color: var(--grey700);
+    border-bottom: 1px solid var(--grey500);
+    cursor: pointer;
+}
+
+.searchStockResultItem:last-child {
+    border-bottom: none;
+}
+
+.searchStockResultItem:hover {
+    background-color: var(--grey300);
+}

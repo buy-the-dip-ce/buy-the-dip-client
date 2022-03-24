@@ -100,15 +100,23 @@ nav,
 section {
     display: block;
 }
+
+* {
+    box-sizing: border-box;
+    line-height: 1.2;
+    font-family: "Open Sans", "Nanum Gothic";
+    color: #333333;
+}
+
 @font-face {
     font-family: "Nanum Gothic";
     font-style: normal;
     font-weight: 400;
     font-display: swap;
     src: local(""),
-        url("fonts/nanum-gothic-v17-korean-regular.woff2") format("woff2"),
+        url("/fonts/nanum-gothic-v17-korean-regular.woff2") format("woff2"),
         /* Chrome 26+, Opera 23+, Firefox 39+ */
-            url("fonts/nanum-gothic-v17-korean-regular.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+            url("/fonts/nanum-gothic-v17-korean-regular.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 /* nanum-gothic-700 - korean */
 @font-face {
@@ -117,9 +125,9 @@ section {
     font-weight: 700;
     font-display: swap;
     src: local(""),
-        url("fonts/nanum-gothic-v17-korean-700.woff2") format("woff2"),
+        url("/fonts/nanum-gothic-v17-korean-700.woff2") format("woff2"),
         /* Chrome 26+, Opera 23+, Firefox 39+ */
-            url("fonts/nanum-gothic-v17-korean-700.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+            url("/fonts/nanum-gothic-v17-korean-700.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 /* open-sans-regular - latin */
 @font-face {
@@ -128,9 +136,9 @@ section {
     font-weight: 400;
     font-display: swap;
     src: local(""),
-        url("fonts/open-sans-v20-latin-regular.woff2") format("woff2"),
+        url("/fonts/open-sans-v20-latin-regular.woff2") format("woff2"),
         /* Chrome 26+, Opera 23+, Firefox 39+ */
-            url("fonts/open-sans-v20-latin-regular.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+            url("/fonts/open-sans-v20-latin-regular.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 @font-face {
@@ -138,9 +146,9 @@ section {
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: local(""), url("fonts/open-sans-v20-latin-700.woff2") format("woff2"),
+    src: local(""), url("/fonts/open-sans-v20-latin-700.woff2") format("woff2"),
         /* Chrome 26+, Opera 23+, Firefox 39+ */
-            url("fonts/open-sans-v20-latin-700.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+            url("/fonts/open-sans-v20-latin-700.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 body {
     line-height: 1.2;
@@ -172,4 +180,11 @@ table {
 
 .flex {
     display: flex;
+}
+
+#root-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
 }

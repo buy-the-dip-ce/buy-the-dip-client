@@ -6,20 +6,30 @@ import Routes from "./Routes"
 import { Router, pathIntegration } from "@rturnq/solid-router"
 import "./styles/index.css"
 import "./styles/palette.css"
+import { StoreProvider } from "./store"
 
-const App: Component<{ url?: string }> = ({ url }) => {
+const App: Component<{
+    router?: {
+        url: string
+        pathname: string
+        router: { [key: string]: string }
+    }
+}> = ({ router }) => {
     return (
-        <MetaProvider tags={[]}>
-            <Link rel="stylesheet" href="index.css" />
-            <Router
-                integration={
-                    isServer ? createSignal({ value: url! }) : pathIntegration()
-                }
-            >
-                <Routes />
-            </Router>
-            <div id="root-modal" />
-        </MetaProvider>
+        <StoreProvider router={router}>
+            <MetaProvider tags={[]}>
+                <Router
+                    integration={
+                        isServer
+                            ? createSignal({ value: router?.url! })
+                            : pathIntegration()
+                    }
+                >
+                    <Routes />
+                </Router>
+                <div id="root-modal" />
+            </MetaProvider>
+        </StoreProvider>
     )
 }
 

@@ -1,13 +1,14 @@
 import { Portal, Show } from "solid-js/web"
 
 import styles from "./style.module.css"
-import { createSignal } from "solid-js"
+import { createSignal, Component } from "solid-js"
+import Modal from "../../Modal"
+import SearchStockModal from "../SearchStockModal"
 
-const AddStockButton = () => {
+const AddStockButton: Component<{ category: string }> = ({ category }) => {
     const [showModal, setShowModal] = createSignal(false)
 
     const onClick = () => {
-        console.log("hi")
         setShowModal(true)
     }
 
@@ -21,18 +22,17 @@ const AddStockButton = () => {
             >
                 + 주식 추가하기22
             </button>
-            <Show when={showModal()} fallback={<div>Loading...</div>}>
-                <div>My Content</div>
+            <Show when={showModal()}>
+                <Portal mount={document.getElementById("root-modal")!}>
+                    <Modal
+                        onClickOutside={() => {
+                            setShowModal(false)
+                        }}
+                    >
+                        <SearchStockModal />
+                    </Modal>
+                </Portal>
             </Show>
-            {showModal() ? (
-                <Portal mount={document.getElementById("root-modal")!}>
-                    <div>My Content</div>
-                </Portal>
-            ) : (
-                <Portal mount={document.getElementById("root-modal")!}>
-                    <div>My Content</div>
-                </Portal>
-            )}
         </>
     )
 }

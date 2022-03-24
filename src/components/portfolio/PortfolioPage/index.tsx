@@ -1,16 +1,15 @@
 import type { Component } from "solid-js"
-import { Title, Meta } from "solid-meta"
 import { Link } from "@rturnq/solid-router"
 import styles from "./style.module.css"
+import { lazy } from "solid-js"
 
-import { useStore } from "../../store/index"
-import PortfolioTableList from "../portfolio/PortfolioTableList"
+const PortfolioTableList = lazy(
+    () => import("../../portfolio/PortfolioTableList")
+)
 
-const Home: Component = () => {
+const PortfolioPage: Component = () => {
     return (
         <>
-            <Title>Title of page</Title>
-            <Meta name="example" content="whatever" />
             <div class="root">
                 <div class={styles.contentsWrapper}>
                     <aside class={styles.contentsAside}>
@@ -37,4 +36,4 @@ const Home: Component = () => {
     )
 }
 
-export default Home
+export default PortfolioPage
