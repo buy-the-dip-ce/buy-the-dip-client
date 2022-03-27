@@ -1,6 +1,6 @@
 import type { Component } from "solid-js"
 import styles from "./post-style.module.css"
-import { Link } from "@rturnq/solid-router"
+import Link from "../common/Link"
 
 const Home: Component = () => {
     return (

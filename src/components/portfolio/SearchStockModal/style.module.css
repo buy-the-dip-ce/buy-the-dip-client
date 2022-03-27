@@ -32,6 +32,7 @@
     max-height: 239px;
     border-radius: var(--small3);
     border: 1px solid var(--grey500);
+    overflow: hidden;
 }
 
 .searchStockResultItem {

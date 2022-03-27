@@ -51,6 +51,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["postcss", "npm:8.4.12"],\
             ["rollup", "npm:2.70.1"],\
             ["rollup-plugin-copy", "npm:3.4.0"],\
+            ["rollup-plugin-json", "npm:4.0.0"],\
             ["rollup-plugin-postcss", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:4.0.2"],\
             ["solid-js", "npm:1.3.13"],\
             ["solid-meta", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.27.3"],\
@@ -660,14 +661,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],\
       ["@rturnq/solid-router", [\
         ["npm:0.3.0", {\
-          "packageLocation": "./.yarn/cache/@rturnq-solid-router-npm-0.3.0-5e6b38e22b-92fe283d83.zip/node_modules/@rturnq/solid-router/",\
+          "packageLocation": "./.yarn/unplugged/@rturnq-solid-router-virtual-ad77b1e0c5/node_modules/@rturnq/solid-router/",\
           "packageDependencies": [\
             ["@rturnq/solid-router", "npm:0.3.0"]\
           ],\
           "linkType": "SOFT"\
         }],\
         ["virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.3.0", {\
-          "packageLocation": "./.yarn/__virtual__/@rturnq-solid-router-virtual-ad77b1e0c5/0/cache/@rturnq-solid-router-npm-0.3.0-5e6b38e22b-92fe283d83.zip/node_modules/@rturnq/solid-router/",\
+          "packageLocation": "./.yarn/unplugged/@rturnq-solid-router-virtual-ad77b1e0c5/node_modules/@rturnq/solid-router/",\
           "packageDependencies": [\
             ["@rturnq/solid-router", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.3.0"],\
             ["@types/solid-js", null],\
@@ -1435,6 +1436,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["postcss", "npm:8.4.12"],\
             ["rollup", "npm:2.70.1"],\
             ["rollup-plugin-copy", "npm:3.4.0"],\
+            ["rollup-plugin-json", "npm:4.0.0"],\
             ["rollup-plugin-postcss", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:4.0.2"],\
             ["solid-js", "npm:1.3.13"],\
             ["solid-meta", "virtual:c5dee129e8dbaa45cb09f62fdca004925f8567e16e4fe707ded45210638200f1c5b3274ba03efe8a86bf82afaba8c7cf56178ab1def50f433ceab729787a5030#npm:0.27.3"],\
@@ -4899,6 +4901,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["fs-extra", "npm:8.1.0"],\
             ["globby", "npm:10.0.1"],\
             ["is-plain-object", "npm:3.0.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["rollup-plugin-json", [\
+        ["npm:4.0.0", {\
+          "packageLocation": "./.yarn/cache/rollup-plugin-json-npm-4.0.0-e8ff255b44-7843545a8c.zip/node_modules/rollup-plugin-json/",\
+          "packageDependencies": [\
+            ["rollup-plugin-json", "npm:4.0.0"],\
+            ["rollup-pluginutils", "npm:2.8.2"]\
           ],\
           "linkType": "HARD"\
         }]\

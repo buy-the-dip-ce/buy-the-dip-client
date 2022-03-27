@@ -18,7 +18,6 @@ const AddStockButton: Component<{ category: string }> = ({ category }) => {
                 class={styles.addStockButton}
                 type="button"
                 onClick={onClick}
-                on:Weird-Event={onClick}
             >
                 + 주식 추가하기22
             </button>
@@ -29,7 +28,7 @@ const AddStockButton: Component<{ category: string }> = ({ category }) => {
                             setShowModal(false)
                         }}
                     >
-                        <SearchStockModal />
+                        <SearchStockModal category={category} />
                     </Modal>
                 </Portal>
             </Show>

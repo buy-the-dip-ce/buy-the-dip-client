@@ -1,11 +1,11 @@
 import nodeResolve from "@rollup/plugin-node-resolve"
 import common from "@rollup/plugin-commonjs"
 import babel from "@rollup/plugin-babel"
-import resolve from "@rollup/plugin-node-resolve"
 import typescript from "@rollup/plugin-typescript"
 import postcss from "rollup-plugin-postcss"
-import run from "@rollup/plugin-run"
 import copy from "rollup-plugin-copy"
+import run from "@rollup/plugin-run"
+
 const extensions = [".js", ".ts", ".tsx", ".jsx", ".css"]
 
 export default [
@@ -21,10 +21,11 @@ export default [
         plugins: [
             typescript(),
             nodeResolve({
+                extensions,
+                browser: true,
                 preferBuiltins: true,
                 exportConditions: ["solid", "node"],
             }),
-            resolve({ extensions, browser: true }),
             babel({
                 exclude: "src/**/*.css",
                 extensions,
@@ -36,8 +37,8 @@ export default [
             postcss({
                 extract: "public/index.css",
             }),
-
             run({ allowRestarts: true }),
+
             copy({
                 targets: [{ src: "public", dest: "dist" }],
             }),
@@ -71,7 +72,7 @@ export default [
                 presets: [["solid", { generate: "dom", hydratable: true }]],
             }),
 
-            common({ include: "node_modules/**" }),
+            common(),
             postcss({
                 extensions: [".css"],
             }),

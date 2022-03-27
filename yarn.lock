@@ -1146,11 +1146,15 @@ __metadata:
     postcss: ^8.4.7
     rollup: ^2.68.0
     rollup-plugin-copy: ^3.4.0
+    rollup-plugin-json: ^4.0.0
     rollup-plugin-postcss: ^4.0.2
     solid-js: ^1.3.13
     solid-meta: ^0.27.3
     tslib: ^2.3.1
     typescript: ^4.5.5
+  dependenciesMeta:
+    "@rturnq/solid-router@0.3.0":
+      unplugged: true
   languageName: unknown
   linkType: soft
 
@@ -3799,6 +3803,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup-plugin-json@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "rollup-plugin-json@npm:4.0.0"
+  dependencies:
+    rollup-pluginutils: ^2.5.0
+  checksum: 7843545a8cd3eab49289f696bbd052bd12d040bb6518520cb3671baee09845686c02abe6ec17849dbc5eb67152a7c165b93b75124d760de572d5ee16ed365c49
+  languageName: node
+  linkType: hard
+
 "rollup-plugin-postcss@npm:^4.0.2":
   version: 4.0.2
   resolution: "rollup-plugin-postcss@npm:4.0.2"
@@ -3822,7 +3835,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-pluginutils@npm:^2.8.2":
+"rollup-pluginutils@npm:^2.5.0, rollup-pluginutils@npm:^2.8.2":
   version: 2.8.2
   resolution: "rollup-pluginutils@npm:2.8.2"
   dependencies:

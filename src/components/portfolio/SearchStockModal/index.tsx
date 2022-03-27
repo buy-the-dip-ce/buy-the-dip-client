@@ -1,12 +1,17 @@
 import styles from "./style.module.css"
-import { createSignal } from "solid-js"
+import { createSignal, Component } from "solid-js"
+import { useStore } from "../../../store/index"
 
-const SearchStockModal = () => {
+const SearchStockModal: Component<{ category: string }> = ({ category }) => {
     const [keyword, setKeyword] = createSignal("")
+
+    const [{ isOwnPortfolio }, { setPortfolio }] = useStore()
 
     const onChangeKeyword = (e: Event) => {
         setKeyword((e.target as HTMLInputElement).value)
     }
+
+    const onClickStockItem = (stock: string) => {}
 
     return (
         <div class={styles.searchStockWrapper}>
@@ -18,7 +23,12 @@ const SearchStockModal = () => {
                 placeholder="AAPL"
             />
             <ul class={styles.searchStockResult}>
-                <li class={styles.searchStockResultItem}>
+                <li
+                    class={styles.searchStockResultItem}
+                    onClick={() => {
+                        onClickStockItem("AAPL")
+                    }}
+                >
                     AAPL ( NASDAQ : Apple Inc )
                 </li>
                 <li class={styles.searchStockResultItem}>

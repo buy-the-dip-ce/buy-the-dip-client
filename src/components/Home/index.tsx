@@ -1,10 +1,9 @@
 import type { Component } from "solid-js"
 import { Title, Meta } from "solid-meta"
-import { Link } from "@rturnq/solid-router"
 import styles from "./style.module.css"
 
-import { useStore } from "../../store/index"
 import PortfolioTableList from "../portfolio/PortfolioTableList"
+import Link from "../common/Link"
 
 const Home: Component = () => {
     return (
