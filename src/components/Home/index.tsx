@@ -3,7 +3,7 @@ import { Title, Meta } from "solid-meta"
 import styles from "./style.module.css"
 
 import PortfolioTableList from "../portfolio/PortfolioTableList"
-import Link from "../common/Link"
+import Link from "../../../components/Link"
 
 const Home: Component = () => {
     return (

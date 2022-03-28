@@ -1,6 +1,6 @@
 import type { Component } from "solid-js"
 import styles from "./post-style.module.css"
-import Link from "../common/Link"
+import Link from "../../../components/Link"
 
 const Home: Component = () => {
     return (

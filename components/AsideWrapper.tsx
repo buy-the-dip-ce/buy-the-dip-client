@@ -1,6 +1,5 @@
 import styled from "styled-components"
-import Link from "../../../components/Link"
-
+import Link from "next/link"
 const Container = styled.div`
     .contentsWrapper {
         display: flex;

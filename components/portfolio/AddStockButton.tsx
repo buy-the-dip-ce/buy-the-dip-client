@@ -1,9 +1,8 @@
-import { useState, ReactPortal } from "react"
-import styles from "./style.module.css"
-import Modal from "../../Modal"
-import SearchStockModal from "../SearchStockModal"
+import { useState } from "react"
+
 import styled from "styled-components"
-import ModalPortal from "../../../../components/Modal"
+import ModalPortal from "../Modal"
+import SearchStockModal from "./SearchStockModal"
 
 const Container = styled.button`
     height: 36px;
@@ -29,13 +28,7 @@ const AddStockButton: React.FC<{ category: string }> = ({ category }) => {
             </Container>
             {showModal && (
                 <ModalPortal closePortal={() => {}}>
-                    <Modal
-                        onClickOutside={() => {
-                            setShowModal(false)
-                        }}
-                    >
-                        <SearchStockModal category={category} />
-                    </Modal>
+                    <SearchStockModal category={category} />
                 </ModalPortal>
             )}
         </>
