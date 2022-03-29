@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 import AddStockButton from "./AddStockButton";
@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { getPortfolio, createPortfolioAPI, updatePortfolioAPI, createCategoryAPI } from "../../lib/api/portfolio";
 import portfolioState from "../../store/index";
 import PortfolioCategoryTitle from "./PortfolioCategoryTitle";
+import isEmpty from "lodash/isEmpty";
 
 const Container = styled.div`
   display: block;
@@ -130,7 +131,7 @@ const Container = styled.div`
   }
 `;
 
-const PortfolioTableList: React.FC<{ portfolio: any }> = () => {
+const PortfolioTableList: React.FC = () => {
   const [portfolio, setPortfolio] = useRecoilState(portfolioState.portfolio);
   const [isOwnPortfolio, setIswOwnPortfolio] = useRecoilState(portfolioState.isOwnPortfolio);
 
@@ -138,16 +139,30 @@ const PortfolioTableList: React.FC<{ portfolio: any }> = () => {
 
   const { push, query } = useRouter();
 
+  useEffect(() => {
+    if (!query["id"] && !isEmpty(portfolio)) {
+      setPortfolio({});
+      setIswOwnPortfolio(false);
+    }
+    if (query["id"]) {
+      refetch();
+      localStorage.setItem("portfolio", JSON.stringify(portfolio));
+    }
+  }, [portfolio, query]);
+
   const { data, refetch } = useQuery(["get-portfolio", query["id"]], () => getPortfolio(query["id"] as string), {
     enabled: !!query["id"],
     onSuccess: ({ data }) => {
       setPortfolio(data);
+      const localData = localStorage.getItem("portfolio");
+      if (JSON.stringify(data) === localData) {
+        setIswOwnPortfolio(true);
+      }
     },
     keepPreviousData: true,
   });
 
   const { mutate } = useMutation(() => createPortfolioAPI(portfolio));
-
   const onClickAddPortfolio = async () => {
     let index = 1;
     let categoryName = "새카테고리";
@@ -166,7 +181,12 @@ const PortfolioTableList: React.FC<{ portfolio: any }> = () => {
         await createCategoryAPI(query["id"] as string, categoryName);
         refetch();
       } else {
-        const { data } = await createPortfolioAPI({ ...portfolio, [categoryName]: [] });
+        const newPortfolioBody = {};
+        Object.keys(portfolio).forEach((_category) => {
+          newPortfolioBody[_category] = portfolio[_category].map((stocks) => stocks.symbol);
+        });
+        newPortfolioBody[categoryName] = [];
+        const { data } = await createPortfolioAPI(newPortfolioBody);
         push(`/portfolios/${data}`);
         setIswOwnPortfolio(true);
       }
@@ -200,7 +220,7 @@ const PortfolioTableList: React.FC<{ portfolio: any }> = () => {
                 </div>
                 <div className={"portolioTableBorder"} />
                 {portfolios.map((stock) => (
-                  <div className={"portfolioTableItem"}>
+                  <div className={"portfolioTableItem"} key={stock.symbol}>
                     <div>{stock.symbol}</div>
                     <div>{stock.name}</div>
                     <div>{stock.market_cap}</div>

@@ -53,7 +53,9 @@ const AsideWrapper: React.FC = ({ children }) => {
         <aside className={"contentsAside"}>
           <h1 className={"logoTitle"}>Buy The Dip</h1>
           <nav className={"navigation"}>
-            <Link href="/portfolios">포트폴리오</Link>
+            <Link href="/portfolios" as="/portfolios">
+              포트폴리오
+            </Link>
             {/* <Link href="/posts">포트폴리오 생성기</Link>
                         <Link href="/posts">배당 캘린더</Link> */}
           </nav>
