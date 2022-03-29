@@ -1,4 +1,6 @@
-import { QueryClient, QueryClientProvider, useQuery } from "react-query"
+import { QueryClient, QueryClientProvider } from "react-query"
+import { RecoilRoot } from "recoil"
+
 import AsideWrapper from "../components/AsideWrapper"
 import "../styles/index.css"
 import "../styles/palette.css"
@@ -7,12 +9,14 @@ const queryClient = new QueryClient()
 
 const App = ({ Component, pageProps }) => {
     return (
-        <QueryClientProvider client={queryClient}>
-            <AsideWrapper>
-                <Component {...pageProps} />
-            </AsideWrapper>
-            <div id="root-modal" />
-        </QueryClientProvider>
+        <RecoilRoot>
+            <QueryClientProvider client={queryClient}>
+                <AsideWrapper>
+                    <Component {...pageProps} />
+                </AsideWrapper>
+                <div id="root-modal" />
+            </QueryClientProvider>
+        </RecoilRoot>
     )
 }
 

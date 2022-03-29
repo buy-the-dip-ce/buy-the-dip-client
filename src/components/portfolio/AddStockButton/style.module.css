@@ -1,9 +1,0 @@
-.addStockButton {
-    height: 36px;
-    padding: 8px 12px;
-    border: 1px solid var(--grey500);
-    background-color: var(--grey300);
-    font-size: var(--medium1);
-    border-radius: var(--small3);
-    cursor: pointer;
-}

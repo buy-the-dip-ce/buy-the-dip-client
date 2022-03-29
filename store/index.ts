@@ -1,14 +1,19 @@
-import { PortfolioStore } from "./../types/portfolio.d"
-import { atom } from "recoil"
+import { PortfolioStore } from "./../types/portfolio.d";
+import { atom } from "recoil";
 
-//* 로그박스 display 여부
-const portfolio = atom<{ portfolio: PortfolioStore | null }>({
-    key: "global-portfolio",
-    default: null,
-})
+const isOwnPortfolio = atom<boolean>({
+  key: "global-is-own-portfolio",
+  default: false,
+});
+
+const portfolio = atom<PortfolioStore | null>({
+  key: "global-portfolio",
+  default: {},
+});
 
 const portfolioState = {
-    portfolio,
-}
+  portfolio,
+  isOwnPortfolio,
+};
 
-export default portfolioState
+export default portfolioState;
