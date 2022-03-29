@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "react-query";
 import { useRouter } from "next/router";
 import { getPortfolio, createPortfolioAPI, updatePortfolioAPI, createCategoryAPI } from "../../lib/api/portfolio";
 import portfolioState from "../../store/index";
+import PortfolioCategoryTitle from "./PortfolioCategoryTitle";
 
 const Container = styled.div`
   display: block;
@@ -24,12 +25,6 @@ const Container = styled.div`
     justify-content: space-between;
     align-items: flex-end;
     margin-bottom: var(--small5);
-  }
-
-  .category {
-    font-size: var(--medium2);
-    color: var(--black500);
-    font-weight: bold;
   }
 
   .portfolio {
@@ -191,7 +186,7 @@ const PortfolioTableList: React.FC<{ portfolio: any }> = () => {
           return (
             <div className={"portfolioItem"}>
               <div className={"portfolioHeader"}>
-                <h4 className={"category"}>{category}</h4>
+                <PortfolioCategoryTitle category={category} />
                 <AddStockButton category={category} />
               </div>
               <div className={"portfolio"}>

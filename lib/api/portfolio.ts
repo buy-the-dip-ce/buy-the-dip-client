@@ -15,3 +15,9 @@ export const createCategoryAPI = async (portfolioId: string, category: string) =
 
 export const updatePortfolioAPI = async (portfolioId: string, category: string, symbol: string) =>
   axios.post(`/portfolios/${portfolioId}/categories/${category}`, { symbol });
+
+export const editCategoryNameAPI = async (
+  portfolioId: string,
+  category: string,
+  body: { prevName: string; name: string }
+) => axios.patch(`/portfolios/${portfolioId}/categories/${category}`, body);
