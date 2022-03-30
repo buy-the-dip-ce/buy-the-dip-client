@@ -1,15 +1,19 @@
-import React from "react"
-import Head from "next/head"
-import styled from "styled-components"
+import React, { useEffect } from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
 
 const index: React.FC = () => {
-    return (
-        <>
-            <Head>
-                <title>Buy The Dip</title>
-            </Head>
-        </>
-    )
-}
+  const router = useRouter();
+  useEffect(() => {
+    router.push("/portfolios", "/portfolios");
+  });
+  return (
+    <>
+      <Head>
+        <title>Buy The Dip</title>
+      </Head>
+    </>
+  );
+};
 
-export default index
+export default index;

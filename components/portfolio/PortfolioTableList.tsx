@@ -36,7 +36,7 @@ const Container = styled.div`
 
   .portfolioTableHeader {
     display: grid;
-    height: 53px;
+    min-height: 53px;
     grid-template-columns: 60px 300px 120px 120px 120px auto;
     background-color: var(--grey400);
   }
@@ -72,7 +72,7 @@ const Container = styled.div`
 
   .portfolioTableItem {
     display: grid;
-    height: 53px;
+    min-height: 53px;
     grid-template-columns: 60px 300px 120px 120px 120px auto;
     background-color: var(--grey450);
   }
@@ -84,6 +84,9 @@ const Container = styled.div`
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    &: last-child ::after{
+      content: none;
+    }
   }
 
   .portfolioTableItem div::after {
@@ -94,6 +97,13 @@ const Container = styled.div`
     height: var(--medium6);
     border-radius: var(--small3);
     background-color: var(--grey500);
+  
+  }
+
+  .portfolioTableDivider {
+    width: 100%;
+    height: 1px;
+    background-color: var(--grey600);
   }
 
   .portfolioTableItem :last-child::after {
@@ -112,7 +122,7 @@ const Container = styled.div`
     position: absolute !important;
     height: 37px;
     left: -45px;
-    background: linear-gradient(90deg, rgba(0, 51, 195, 0.5) 0%, rgba(244, 248, 250, 0) 100%);
+    background: linear-gradient(90deg, rgba(244, 248, 250, 0) 0%, rgba(0, 51, 195, 0.5) 100%);
     border-radius: 3px;
   }
 
@@ -145,7 +155,9 @@ const PortfolioTableList: React.FC = () => {
       setIswOwnPortfolio(false);
     }
     if (query["id"]) {
-      refetch();
+      if (isEmpty(portfolio)) {
+        refetch();
+      }
       localStorage.setItem("portfolio", JSON.stringify(portfolio));
     }
   }, [portfolio, query]);
@@ -153,6 +165,9 @@ const PortfolioTableList: React.FC = () => {
   const { data, refetch } = useQuery(["get-portfolio", query["id"]], () => getPortfolio(query["id"] as string), {
     enabled: !!query["id"],
     onSuccess: ({ data }) => {
+      if (isEmpty(data)) {
+        return;
+      }
       setPortfolio(data);
       const localData = localStorage.getItem("portfolio");
       if (JSON.stringify(data) === localData) {
@@ -201,10 +216,10 @@ const PortfolioTableList: React.FC = () => {
   return (
     <Container>
       {portfolio &&
-        Object.keys(portfolio).map((category) => {
+        Object.keys(portfolio).map((category, index) => {
           const portfolios = portfolio[category];
           return (
-            <div className={"portfolioItem"}>
+            <div className={"portfolioItem"} key={index}>
               <div className={"portfolioHeader"}>
                 <PortfolioCategoryTitle category={category} />
                 <AddStockButton category={category} />
@@ -220,30 +235,35 @@ const PortfolioTableList: React.FC = () => {
                 </div>
                 <div className={"portolioTableBorder"} />
                 {portfolios.map((stock) => (
-                  <div className={"portfolioTableItem"} key={stock.symbol}>
-                    <div>{stock.symbol}</div>
-                    <div>{stock.name}</div>
-                    <div>{stock.market_cap}</div>
-                    <div>
-                      <div
-                        className={"portfolioItemPlusGraphGradient"}
-                        style={{
-                          width: `${45 + 50}px`,
-                        }}
-                      />
-                      -50.3%
+                  <>
+                    <div className={"portfolioTableItem"} key={stock.symbol}>
+                      <div>{stock.symbol}</div>
+                      <div>{stock.name}</div>
+                      <div>{stock.market_cap}</div>
+                      <div>
+                        <div
+                          className={"portfolioItemMinusGraphGradient"}
+                          style={{
+                            width: `${45 + Number(stock.mdd)}px`,
+                          }}
+                        />
+                        -{stock.mdd}%
+                      </div>
+                      <div>
+                        <div
+                          className={
+                            Number(stock.ytd) > 0 ? "portfolioItemPlusGraphGradient" : "portfolioItemMinusGraphGradient"
+                          }
+                          style={{
+                            width: `${45 + Math.abs(Number(stock.ytd))}px`,
+                          }}
+                        />
+                        {`${stock.ytd}%`}
+                      </div>
+                      <div>{stock.per}</div>
                     </div>
-                    <div>
-                      <div
-                        className={"portfolioItemPlusGraphGradient"}
-                        style={{
-                          width: `${45 + 20}px`,
-                        }}
-                      />
-                      -20.3%
-                    </div>
-                    <div>{stock.per}</div>
-                  </div>
+                    <div className={"portfolioTableDivider"} />
+                  </>
                 ))}
               </div>
             </div>

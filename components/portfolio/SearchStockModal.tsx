@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { searchStockAPI, updatePortfolioAPI } from "../../lib/api/portfolio";
 
 import { useRouter } from "next/router";
+import isEmpty from "lodash/isEmpty";
 
 const Container = styled.div`
   width: 640px;
@@ -42,7 +43,7 @@ const Container = styled.div`
     max-height: 239px;
     border-radius: var(--small3);
     border: 1px solid var(--grey500);
-    overflow: hidden;
+    overflow: scroll;
   }
 
   .searchStockResultItem {
@@ -77,12 +78,7 @@ const SearchStockModal: React.FC<{ category: string; setShowModal: any }> = ({ c
   const portfolioId = useMemo(() => query["id"], [query]);
 
   const stocks = useMemo(() => {
-    return (
-      data?.data || [
-        { symbol: "AAPL", name: "Apple industry" },
-        { symbol: "GOOGL", name: "google inc." },
-      ]
-    );
+    return data?.data || [];
   }, [data]);
 
   const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,18 +98,26 @@ const SearchStockModal: React.FC<{ category: string; setShowModal: any }> = ({ c
   return (
     <Container className={"searchStockWrapper"}>
       <p className={"searchStockTitle"}>주식명</p>
-      <input className={"searchStockKeywordInput"} onChange={onChangeKeyword} value={keyword} placeholder="AAPL" />
-      <ul className={"searchStockResult"}>
-        {stocks.map((stock) => (
-          <li
-            className={"searchStockResultItem"}
-            onClick={() => {
-              onClickStockItem(stock.symbol);
-            }}>
-            {stock.symbol} {stock.name}
-          </li>
-        ))}
-      </ul>
+      <input
+        className={"searchStockKeywordInput"}
+        onChange={onChangeKeyword}
+        value={keyword}
+        placeholder="EX) AAPL, GOOGL"
+      />
+      {!isEmpty(stocks) && (
+        <ul className={"searchStockResult"}>
+          {stocks.map((stock) => (
+            <li
+              key={stock.symbol}
+              className={"searchStockResultItem"}
+              onClick={() => {
+                onClickStockItem(stock.symbol);
+              }}>
+              {stock.symbol} ({stock.name})
+            </li>
+          ))}
+        </ul>
+      )}
     </Container>
   );
 };
